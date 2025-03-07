@@ -1,0 +1,10 @@
+# Ignore build and output directories
+[Bb]in/
+[Oo]bj/
+
+
+# Ignore NuGet packages and cache
+.nuget/
+packages/
+NuGet.exe
+nuget.config
