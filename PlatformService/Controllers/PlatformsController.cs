@@ -1,8 +1,10 @@
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using PlatformService.Data;
 using PlatformService.Dtos;
 using PlatformService.Models;
+using PlatformService.SyncDataServices.Http;
 
 namespace PlatformService.Controllers
 {
@@ -12,11 +14,16 @@ namespace PlatformService.Controllers
     {
         private readonly IPlatformRepo _repository;
         private readonly IMapper _mapper;
+        private readonly ICommandDataClient _commandDataClient;
 
-        public PlatformsController(IPlatformRepo repository, IMapper mapper)
+        public PlatformsController(
+            IPlatformRepo repository, 
+            IMapper mapper,
+            ICommandDataClient commandDataClient)
         {
             _repository = repository;
             _mapper = mapper;
+            _commandDataClient = commandDataClient;
         }
 
         [HttpGet]
@@ -39,13 +46,23 @@ namespace PlatformService.Controllers
         }
 
         [HttpPost]
-        public ActionResult<PlatformReadDto> CreatePlatform(PlatformCreateDto platformCreateDto)
+        public async Task<ActionResult<PlatformReadDto>> CreatePlatform(PlatformCreateDto platformCreateDto)
         {
             Platform obj = _mapper.Map<Platform>(platformCreateDto);
 
             _repository.CreatePlatform(obj);
             _repository.SaveChanges();
             PlatformReadDto objRead = _mapper.Map<PlatformReadDto>(obj);
+            try
+            {
+                await _commandDataClient.SendPlatformToCommand(objRead);
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"---> Could not send synchronously: {ex.Message}");
+                Console.WriteLine($"---> Could not send synchronously: {ex.InnerException}");
+                
+            }
             return CreatedAtRoute(nameof(GetPlatformsById), new {Id = objRead.Id}, objRead);
         }
     }

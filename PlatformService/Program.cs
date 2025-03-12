@@ -1,5 +1,7 @@
+using System.Windows.Input;
 using Microsoft.EntityFrameworkCore;
 using PlatformService.Data;
+using PlatformService.SyncDataServices.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,17 @@ builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMe
 // Registering PlatformRepo as a scoped service.
 // A new instance will be created per HTTP request, ensuring safe database operations.
 builder.Services.AddScoped<IPlatformRepo, PlatformRepo>();
+
+// Registers HttpCommandDataClient as the implementation for ICommandDataClient,
+// automatically providing an HttpClient instance via HttpClientFactory.
+builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>()
+    .ConfigurePrimaryHttpMessageHandler(() =>
+    {
+        var handler = new HttpClientHandler();
+        handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true; // Ignore SSL errors
+        return handler;
+    });
+Console.WriteLine($"--->  CommandService Endpoint {builder.Configuration["CommandService"]}");
 
 builder.Services.AddControllers();
 
