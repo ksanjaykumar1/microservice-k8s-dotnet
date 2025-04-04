@@ -11,7 +11,24 @@ var builder = WebApplication.CreateBuilder(args);
 //     option.UseMySql( builder.Configuration.GetConnectionString("DefaultConnection"),
 //     new MySqlServerVersion(new Version(8, 0, 34)));
 // });
-builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
+
+if (builder.Environment.IsProduction())
+{
+
+    Console.WriteLine("---> Using MySQL Db");
+    Console.WriteLine($"---> MySQL Db:${builder.Configuration.GetConnectionString("PlatformsConn")}");
+    builder.Services.AddDbContext<AppDbContext>(option =>
+        option.UseMySql(
+            builder.Configuration.GetConnectionString("PlatformsConn"),
+            new MySqlServerVersion(new Version(8, 0, 34)))
+    );
+}
+else
+{
+    Console.WriteLine("---> Using In-Memory Db");
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseInMemoryDatabase("InMem"));
+}
 
 // Registering PlatformRepo as a scoped service.
 // A new instance will be created per HTTP request, ensuring safe database operations.
@@ -45,14 +62,29 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+// if(app.Environment.IsProduction())
+// {
+//         Console.WriteLine("---> Using Mysql Db");
+//         builder.Services.AddDbContext<AppDbContext>( option => 
+//         {
+//             option.UseMySql( builder.Configuration.GetConnectionString("DefaultConnection"),
+//             new MySqlServerVersion(new Version(8, 0, 34)));
+//         }); 
+        
+// }
+// else
+// {
+//     Console.WriteLine("---> Using inMem Db");
+//     builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
+// }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
 
-PrepDb.PrepPopulation(app);
+PrepDb.PrepPopulation(app, app.Environment.IsProduction());
 
 app.Run();
 
