@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: platform-depl
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: platformservice
@@ -35,3 +35,5 @@ spec:
     protocol: TCP
     port: 80
     targetPort: 80
+
+---
