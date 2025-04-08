@@ -1,3 +1,5 @@
+using CommandService.Models;
+
 namespace CommandService.Dtos
 {
     public class CommandReadDto
