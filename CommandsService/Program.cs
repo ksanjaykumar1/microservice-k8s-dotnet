@@ -1,6 +1,17 @@
+using CommandService.Data;
+using CommandsService.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Registers AppDbContext with an in-memory database named "InMem" for testing or development purposes
+builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
+
+// Registers the CommandRepo implementation for ICommandRepo with scoped lifetime,
+// meaning a new instance is created per HTTP request
+builder.Services.AddScoped<ICommandRepo, CommandRepo>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
