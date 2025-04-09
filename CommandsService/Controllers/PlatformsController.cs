@@ -3,7 +3,7 @@ using CommandService.Data;
 using CommandService.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CommandsService.AddControllers
+namespace CommandsService.Controllers
 {
     [Route("api/c/[controller]")]
     [ApiController]
