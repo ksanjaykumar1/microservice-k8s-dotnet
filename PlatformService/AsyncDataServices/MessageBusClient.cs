@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json;
 using PlatformService.Dtos;
 using RabbitMQ.Client;
 
@@ -36,7 +38,34 @@ namespace PlatformService.AsyncDataServices
         }
         public void PublishNewPlatform(PlatformPublishedDto platformPublishedDto)
         {
-            throw new NotImplementedException();
+            // RabbitMQ Requirement: Messages must be sent as byte arrays/strings.
+            var message = JsonSerializer.Serialize(platformPublishedDto);
+
+            if(_connection.IsOpen)
+            {
+                Console.WriteLine("---> RabbitMQ connection open, sending message....");
+                SendMessage(message);
+            }
+            else
+            {
+                Console.WriteLine("---> RabbitMQ connection is close, not sending");
+            }
+        }
+
+        private void SendMessage(string message)
+        {
+            var body = Encoding.UTF8.GetBytes(message);
+            _channel.BasicPublish(exchange: "trigger", routingKey: "", basicProperties: null, body: body);
+            Console.WriteLine($"---> We have sent {message}");
+        }
+
+        public void Dispose()
+        {
+            Console.WriteLine("Message Disposed");
+            if(_channel.IsOpen)
+            {
+                _channel.Close();
+            }   _connection.Close();
         }
 
         private void RabbitMQ_ConnectionShutdown(object sender, ShutdownEventArgs e)
