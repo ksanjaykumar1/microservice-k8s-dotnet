@@ -1,5 +1,6 @@
 using System.Windows.Input;
 using Microsoft.EntityFrameworkCore;
+using PlatformService.AsyncDataServices;
 using PlatformService.Data;
 using PlatformService.SyncDataServices.Http;
 
@@ -44,6 +45,8 @@ builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>()
         return handler;
     });
 Console.WriteLine($"--->  CommandService Endpoint {builder.Configuration["CommandService"]}");
+
+builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
 
 builder.Services.AddControllers();
 
